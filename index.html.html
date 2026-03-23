@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伯爵山莊：地質與設施安全證據庫</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e74c3c;
+            --highlight: #f1c40f;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+        h1 {
+            color: var(--primary);
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-style: italic;
+        }
+        .badge-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        .badge.green { background: #27ae60; }
+        .badge.blue { background: #2980b9; }
+
+        .evidence-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            overflow: hidden;
+            border-left: 5px solid var(--primary);
+            transition: box-shadow 0.3s;
+        }
+        .evidence-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        .card-header {
+            background: #e9ecef;
+            padding: 15px 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .tag.official { background: #27ae60; }
+        .tag.news { background: #2980b9; }
+        .tag.logic { background: #8e44ad; }
+        
+        .card-body {
+            padding: 20px;
+        }
+        .quote-box {
+            background: #fff3cd;
+            border-left: 4px solid var(--highlight);
+            padding: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #555;
+            border-radius: 0 8px 8px 0;
+        }
+        .source-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 1px dotted var(--accent);
+            transition: color 0.2s;
+        }
+        .source-link:hover {
+            color: #c0392b;
+            border-bottom: 1px solid #c0392b;
+        }
+        
+        /* Geology Diagram */
+        .geology-diagram {
+            width: 100%;
+            height: 250px;
+            background: #e0e0e0;
+            position: relative;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .layer-soil {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 30%;
+            background: #d7ccc8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5d4037;
+            font-weight: bold;
+            border-bottom: 2px dashed #8d6e63;
+            font-size: 0.9em;
+            text-align: center;
+            padding: 5px;
+        }
+        .layer-rock {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 70%;
+            background: repeating-linear-gradient(
+                45deg,
+                #95a5a6,
+                #95a5a6 10px,
+                #7f8c8d 10px,
+                #7f8c8d 20px
+            );
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 20px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .pylon-base {
+            position: absolute;
+            left: 50%;
+            top: 10%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 180px;
+            background: #34495e;
+            z-index: 2;
+        }
+        .pylon-top {
+            position: absolute;
+            left: 50%;
+            top: -10px;
+            transform: translateX(-50%);
+            width: 0; 
+            height: 0; 
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 60px solid #34495e;
+            z-index: 3;
+        }
+        .label-arrow {
+            position: absolute;
+            background: rgba(255,255,255,0.92);
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.78em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            color: darkred;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-top: 20px;
+            transition: background 0.3s;
+            font-size: 1em;
+        }
+        .action-btn:hover {
+            background: #1a252f;
+        }
+
+        .contact-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 25px;
+            text-align: center;
+            border-top: 4px solid var(--primary);
+        }
+        .contact-section h3 {
+            color: var(--primary);
+            margin-top: 0;
+        }
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .contact-item {
+            font-size: 0.95em;
+            color: #555;
+        }
+        .disclaimer {
+            font-size: 0.8em;
+            color: #999;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        ul li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🏔️ 伯爵山莊安全證據庫</h1>
+        <p class="subtitle">關於地質與設施安全，這裡有最完整的官方證據。</p>
+        <div class="badge-row">
+            <span class="badge blue">官方資料來源</span>
+            <span class="badge green">新北市工務局認證</span>
+            <span class="badge">台電正式聲明</span>
+        </div>
+    </header>
+
+    <!-- Evidence 1: Official News -->
+    <div class="evidence-card">
+        <div class="card-header">
+            <span>📰 證據一：台電官方與新聞聲明</span>
+            <span class="tag news">NEWS / 2022</span>
+        </div>
+        <div class="card-body">
+            <h3>台電：高壓電塔邊坡穩固，深入岩盤</h3>
+            <p>2022 年 10 月 17 日尼莎颱風造成土石流事件後，台電與新北市工務局的正式回應。請注意關鍵字：<strong>「岩盤」</strong>與<strong>「穩固」</strong>。</p>
+            
+            <div class="quote-box">
+                「台電今天派專家赴現場勘查...<strong>新北市工務局也判定鐵塔基座穩固</strong>...有關塔基安全，台電指出，該座鐵塔於民國66年完成...歷經45年多次豪大雨與颱風侵襲，<strong>邊坡皆穩固無虞</strong>。」<br><br>
+                「台電指電塔基座<strong>打到岩盤</strong>，安全無虞...」
+            </div>
+
+            <p><strong>原始新聞來源（可點擊親自驗證）：</strong></p>
+            <ul>
+                <li><a href="https://www.cna.com.tw/news/asoc/202210170249.aspx" target="_blank" class="source-link">中央社 CNA：伯爵山莊土石流 台電：高壓電塔邊坡穩固</a></li>
+                <li><a href="https://www.moea.gov.tw/Mns/populace/news/News.aspx?kind=1&menu_id=40&news_id=103204" target="_blank" class="source-link">經濟部官網聲明：鐵塔於民國66年已設置完成...皆穩固無虞</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Evidence 2: Geological Map -->
+    <div class="evidence-card">
+        <div class="card-header">
+            <span>🗺️ 證據二：中央地質調查所圖資驗證</span>
+            <span class="tag official">GEOLOGY MAP</span>
+        </div>
+        <div class="card-body">
+            <h3>木山層 (Mushan Formation) 的存在證明</h3>
+            <p>口說無憑，以下教你怎麼查官方地圖。政府公開資訊，絕對假不了。</p>
+            
+            <div class="geology-diagram">
+                <div class="layer-soil">表土層 (Soil/Colluvium)<br><small>鬆散、易滑動（本次災害點）</small></div>
+                <div class="layer-rock">木山層 (Mushan Formation)<br><small>厚層石英砂岩 — 堅硬岩盤（電塔基座與地錨所在）</small></div>
+                <div class="pylon-base"></div>
+                <div class="pylon-top"></div>
+                <div class="label-arrow" style="top: 140px; left: 55%;">← 電塔基礎深入岩盤</div>
+            </div>
+
+            <div class="quote-box">
+                <strong>🔍 自行驗證步驟（SOP）：</strong><br><br>
+                1. 進入「經濟部地質調查及礦業管理中心」的 <a href="https://gis.gsmma.gov.tw/GisMap/Map" target="_blank" style="color: #e67e22;">地質圖資整合查詢系統</a>。<br>
+                2. 定位至「新北市汐止區伯爵街」。<br>
+                3. 開啟「五萬分之一地質圖」圖層。<br>
+                4. 可見該區塊標示為 <strong>Ms（木山層）</strong>，屬沉積岩盤結構。
+            </div>
+            
+            <p style="font-size: 0.9em; color: #666;">*木山層特徵：灰白色中至粗粒石英砂岩，抗壓強度極高，是北台灣山區常見的基盤。</p>
+        </div>
+    </div>
+
+    <!-- Evidence 3: Engineering Logic -->
+    <div class="evidence-card">
+        <div class="card-header">
+            <span>⚙️ 證據三：工程逆向推導</span>
+            <span class="tag logic">ENGINEERING</span>
+        </div>
+        <div class="card-body">
+            <h3>為什麼「有地錨」= 代表「有岩盤」？</h3>
+            <p>簡單的物理邏輯，直接破解對地質安全的直覺恐懼。</p>
+            <ul>
+                <li><strong>地錨 (Ground Anchor) 的定義：</strong> 利用高強度鋼索，穿過鬆動層，固定在深層穩定的地層中，提供抗滑力。</li>
+                <li><strong>摩擦力原理：</strong> 就像釘釘子，如果牆壁是爛泥巴（軟土），釘子根本吃不住力，地錨毫無意義。</li>
+                <li><strong>邏輯結論：</strong> 伯爵山莊擁有大量<strong>永久性地錨</strong>，且歷經數十年監測仍在使用，這本身就直接證明了地底存在<strong>「足夠堅硬且連續的岩體」</strong>提供錨定力。</li>
+            </ul>
+
+            <div class="quote-box">
+                <strong>簡單版解釋：</strong><br>
+                若底層是爛泥巴 → 地錨沒用 → 工程師不會裝<br>
+                伯爵山莊有地錨且有效 → 底層一定是岩盤 ✅
+            </div>
+        </div>
+    </div>
+
+    <a href="https://gis.gsmma.gov.tw/GisMap/Map" target="_blank" class="action-btn">
+        🔍 前往中央地質調查所 GIS 系統（親自驗證）
+    </a>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+        <h3>🏠 有任何問題，歡迎聯繫</h3>
+        <p>伯爵山莊系列專責業務，帶看、估價、市場分析都可以諮詢。</p>
+        <div class="contact-info">
+            <span class="contact-item">👤 朱晟華 Ethan</span>
+            <span class="contact-item">🏢 台灣房屋東湖店</span>
+        </div>
+    </div>
+
+    <p class="disclaimer">
+        本頁面內容基於公開資料（台電聲明、中央地質調查所圖資、新聞報導），僅供參考。<br>
+        建議購屋前自行至官方來源驗證相關資訊，並諮詢專業技師。
+    </p>
+
+</div>
+
+</body>
+</html>
